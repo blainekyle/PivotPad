@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIVOT PAD</title>
+    <style>
+        body {
+            font-family: Ubuntu, Trebuchet MS, sans-serif;
+            margin: 0;
+            padding: 0 1em 1em 1em;
+			overflow: hidden;
+			height: 100vh;
+			background-image:
+				linear-gradient(135deg, #94ebab 0, transparent 50% 100%),
+				repeating-linear-gradient(to right, #a2e2a2 0 1px, transparent 1px 10px), /* Vertical lines */
+				repeating-linear-gradient(to bottom, #a2e2a2 0 1px, transparent 1px 10px); /* Horizontal lines */
+        }
+        h1 {
+            text-align: center;
+			font-family: Ubuntu, Trebuchet MS, sans-serif;
+            margin: 0;
+			opacity: 0.8;
+			size: 0.5em;
+			padding: 0;
+            color: #03210b;
+			text-shadow: 1px 1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff;
+			pointer-events: none;
+        }
+        .container {
+            display: flex;
+            gap: 1em; /* Space between the two text areas */
+            height: calc(100vh - 180px); /* Slightly adjusted height for controls bar */
+            min-height: 300px; /* Minimum height for usability */
+        }
+        .input-area, .output-area {
+            flex: 1; /* Each area takes up half the available space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Common textarea styles */
+        textarea {
+            width: 100%;
+            height: 100%; /* Fill the available height in the container */
+            box-sizing: border-box;
+            padding: 0.2empx;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: none;
+            border-radius: 4px;
+        }
+
+        /* --- Input Textarea Styling --- */
+        #inputText {
+            border: 2px solid #03210b;
+            background-color: #fffc;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        #inputText:hover {
+            border-color: #0056b3;
+        }
+        #inputText:focus {
+            border-color: #0056b3;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        /* --- Output Textarea Styling --- */
+        #outputText {
+            border: 1px solid #03210b;
+            background-color: #fffc;
+            color: #495057;
+        }
+
+        /* --- Controls Styling --- */
+        .controls {
+            box-sizing: border-box;
+            margin: 1em 1em 1em 0.5em;
+            display: flex; /* Arrange groups horizontally */
+            justify-content: space-between; /* Push groups to opposite ends */
+            align-items: center; /* Vertically align items in the middle */
+            gap: 0.5em;
+            padding: 0.5em;
+            background-color: #fffa;
+            border-radius: 4px;
+            min-height: 1.5em; /* Ensure consistent height */
+        }
+        .control-group-left, .control-group-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+         .controls label {
+            cursor: pointer;
+            font-weight: normal;
+            color: #333;
+            margin-bottom: 0; /* Remove potential bottom margin */
+         }
+         /* --- Copy Button Styling --- */
+         #copyButton {
+            padding: 0.5em;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #03210b80;
+            background-color: #0e9632;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+            white-space: nowrap; /* Prevent text wrapping */
+         }
+         #copyButton:hover {
+            background-color: #03210b;
+            border-color: #ccc;
+         }
+         #copyButton:active {
+            background-color: #03210b;
+            border-color: #fff;
+         }
+         #copyButton:disabled { /* Style when temporarily disabled after copy */
+             opacity: 0.7;
+             cursor: default;
+         }
+         /* Style for feedback */
+         #copyButton.copied-success {
+            background-color: #28a745; /* Green */
+            border-color: #28a745;
+         }
+         #copyButton.copied-error {
+             background-color: #dc3545; /* Red */
+             border-color: #dc3545;
+         }
+
+
+         /* --- Label Styling --- */
+         .input-area label, .output-area label {
+           display: block;
+           margin-bottom: 0.1em;
+           font-weight: bold;
+           color: #333;
+         }
+         .input-area label {
+            color: #333; /* Blue to match input focus */
+         }
+         .output-area label {
+             color: #333; /* Teal to match copy button */
+         }
+
+    </style>
+</head>
+<body>
+
+    <h1>PIVOT PAD</h1>
+
+    <div class="controls">
+        <div class="control-group-left"> <input type="checkbox" id="omitBlanksCheckbox" style="cursor: pointer;">
+             <label for="omitBlanksCheckbox">Omit blank lines</label>
+        </div>
+        <div class="control-group-right"> <button id="copyButton" title="Copy the CSV text from the output box below">Copy CSV Output</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="input-area">
+            <label for="inputText">Paste List Here (one item per line):</label>
+            <textarea id="inputText" placeholder="Value 1
+Value 2
+
+Value 4
+..."></textarea>
+        </div>
+        <div class="output-area">
+             <label for="outputText">CSV Output:</label>
+            <textarea id="outputText" readonly placeholder="Value 1,Value 2,Value 4,..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        console.log("Script starting...");
+
+        try {
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            const omitBlanksCheckbox = document.getElementById('omitBlanksCheckbox');
+            const copyButton = document.getElementById('copyButton'); // Get the button
+
+            // Check if elements were found
+            if (!inputText || !outputText || !omitBlanksCheckbox || !copyButton) { // Added copyButton check
+                 console.error("ERROR: One or more essential HTML elements not found! Check IDs: 'inputText', 'outputText', 'omitBlanksCheckbox', 'copyButton'.");
+                 document.body.insertAdjacentHTML('afterbegin', '<p style="color: red; font-weight: bold; border: 2px solid red; padding: 10px;">Critical Error: Page elements missing. Cannot initialize the tool. Check console (F12).</p>');
+            } else {
+                 console.log("Essential elements found successfully.");
+            }
+
+            // --- Main Conversion Logic ---
+            function updateOutput() {
+                if (!inputText || !outputText || !omitBlanksCheckbox) {
+                    console.warn("updateOutput called but elements are missing.");
+                    return;
+                }
+                try {
+                    const rawText = inputText.value;
+                    let lines = rawText.split('\n');
+                    if (omitBlanksCheckbox.checked) {
+                        lines = lines.filter(line => line.trim() !== '');
+                    }
+                    const csvOutput = lines.join(',');
+                    outputText.value = csvOutput;
+                } catch (error) {
+                     console.error("Error during updateOutput execution:", error);
+                }
+            }
+
+            // --- Copy Button Feedback Handler ---
+            function setCopyButtonFeedback(buttonElement, message, success = true, durationMs = 1500) {
+                 const originalText = buttonElement.dataset.originalText || buttonElement.innerText; // Store original text if not already stored
+                 buttonElement.dataset.originalText = originalText; // Ensure it's stored
+
+                 buttonElement.innerText = message;
+                 buttonElement.classList.remove('copied-success', 'copied-error'); // Clear previous states
+                 buttonElement.classList.add(success ? 'copied-success' : 'copied-error'); // Add appropriate class
+                 buttonElement.disabled = true; // Briefly disable
+
+                 setTimeout(() => {
+                     buttonElement.innerText = originalText; // Restore original text
+                     buttonElement.classList.remove('copied-success', 'copied-error');
+                     buttonElement.disabled = false; // Re-enable
+                     delete buttonElement.dataset.originalText; // Clean up stored text
+                 }, durationMs);
+            }
+
+            // --- Event Listeners Setup ---
+            if (inputText && outputText && omitBlanksCheckbox && copyButton) {
+                // Listener for input changes
+                inputText.addEventListener('input', updateOutput);
+                // Listener for checkbox changes
+                omitBlanksCheckbox.addEventListener('change', updateOutput);
+                console.log("Input and checkbox event listeners attached.");
+
+                // Listener for the Copy Button
+                copyButton.addEventListener('click', () => {
+                    const textToCopy = outputText.value;
+
+                    if (!textToCopy) {
+                        console.log("Nothing to copy.");
+                        setCopyButtonFeedback(copyButton, "Nothing to Copy", false, 1000); // Optional feedback
+                        return;
+                    }
+
+                    if (navigator.clipboard && window.isSecureContext) {
+                        // Modern Clipboard API
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            setCopyButtonFeedback(copyButton, 'Copied!', true);
+                            console.log('CSV Output copied to clipboard (API).');
+                        }).catch(err => {
+                            console.error('Failed to copy text using Clipboard API: ', err);
+                            setCopyButtonFeedback(copyButton, 'Copy Failed', false);
+                        });
+                    } else {
+                        // Fallback using document.execCommand
+                        console.warn('Using fallback document.execCommand("copy"). May not work in all browsers/contexts.');
+                        try {
+                            outputText.select(); // Select the text
+                            // outputText.setSelectionRange(0, 99999); // For mobile (optional, select() often sufficient on desktop)
+
+                            const successful = document.execCommand('copy'); // Execute copy
+
+                            if (successful) {
+                                 setCopyButtonFeedback(copyButton, 'Copied!', true);
+                                 console.log('CSV Output copied to clipboard (Fallback).');
+                            } else {
+                                 setCopyButtonFeedback(copyButton, 'Copy Failed', false);
+                                 console.error('Fallback copy command failed.');
+                            }
+                             // Deselect text - Use timeout to ensure copy happens first
+                             setTimeout(() => {
+                                if (window.getSelection) { // Standard
+                                     window.getSelection().removeAllRanges();
+                                } else if (document.selection) { // IE < 9
+                                     document.selection.empty();
+                                }
+                             }, 100); // Small delay
+
+                        } catch (err) {
+                            console.error('Error during fallback copy: ', err);
+                            setCopyButtonFeedback(copyButton, 'Copy Failed', false);
+                        }
+                    }
+                });
+                console.log("Copy button event listener attached.");
+
+                // Initial update call
+                updateOutput();
+                console.log("Initial update complete.");
+            } else {
+                 console.error("ERROR: Could not attach event listeners because one or more elements were missing.");
+            }
+
+        } catch (error) {
+            console.error("CRITICAL ERROR during script setup:", error);
+            document.body.insertAdjacentHTML('afterbegin', '<p style="color: red; font-weight: bold; border: 2px solid red; padding: 10px;">A critical error occurred loading the page script. Please check the console (F12).</p>');
+        }
+
+         console.log("Script execution finished.");
+    </script>
+
+</body>
+</html>
