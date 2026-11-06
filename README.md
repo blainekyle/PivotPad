@@ -18,7 +18,7 @@ Launch in browser: **[blainekyle.github.io/PivotPad](https://blainekyle.github.i
 - **Bidirectional Real-Time Sync**:
   - Type or paste into **List View (One per line)** on the left to immediately format **Delimited View (CSV)** on the right.
   - Edit or paste any delimited string into **Delimited View** on the right to immediately pivot it back into a vertical list on the left.
-- **Custom Multi-Character Delimiters**: Replace the default `,` delimiter with any separator up to 5 characters (e.g. `, `, `;`, ` | `, `' , '`) with automatic regex escaping on reverse splits.
+- **Custom Multi-Character Delimiters**: Replace the default `,` delimiter with any separator up to 5 characters (e.g. `, `, `;`, ` | `, or `', '` when pasting inside a surrounding `IN ('...')` clause) with automatic regex escaping on reverse splits.
 - **Blank Line Filtering**: Toggle **Omit blank lines** to strip empty rows and trailing whitespace entries in both directions.
 - **One-Click Copy**: Instant clipboard export with visual confirmation feedback.
 - **Classic Mode**: Includes a footer toggle to switch anytime to [**Pivot Pad Classic**](https://blainekyle.github.io/PivotPad/ppclassic.html).
